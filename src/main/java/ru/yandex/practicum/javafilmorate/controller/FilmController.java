@@ -38,7 +38,7 @@ public class FilmController {
             films.put(id, film);
             log.info("The film has been updated", film);
         } else {
-            log.warn("This film doesn't existed");
+            log.error("This film doesn't existed");
             throw new ValidationException("This film doesn't existed");
         }
         return film;
