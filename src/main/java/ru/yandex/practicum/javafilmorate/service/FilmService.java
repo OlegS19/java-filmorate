@@ -2,11 +2,15 @@ package ru.yandex.practicum.javafilmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.exception.UserAlreadyExistException;
+import ru.yandex.practicum.javafilmorate.exception.ValidationException;
 import ru.yandex.practicum.javafilmorate.model.Film;
+import ru.yandex.practicum.javafilmorate.model.User;
 import ru.yandex.practicum.javafilmorate.storage.FilmStorage;
+import ru.yandex.practicum.javafilmorate.storage.UserStorage;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    public UserStorage userStorage;
 
     @Autowired
     public FilmService(FilmStorage filmStorage) {
@@ -49,10 +54,14 @@ public class FilmService {
         }
     }
 
-    public Film addLikes(int filmId, int userId) {
+    public Film addLikes(int filmId, long userId) {
+        if (userStorage.getUserById(userId).isEmpty()) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "User with id = " + userId +
+                    "is not exist ");
+        }
         Film film = getFilmById(filmId);
         if (!film.getLikes().contains(userId)) {
-            film.getLikes().add(userId);
+            film.getLikes().add((int) userId);
             log.info("A like added to the film with id = {} ", filmId);
             return film;
         } else {
