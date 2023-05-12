@@ -8,7 +8,6 @@ import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.javafilmorate.exception.ValidationException;
 import ru.yandex.practicum.javafilmorate.model.Film;
-import ru.yandex.practicum.javafilmorate.model.User;
 import ru.yandex.practicum.javafilmorate.storage.FilmStorage;
 import ru.yandex.practicum.javafilmorate.storage.UserStorage;
 
