@@ -21,11 +21,12 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
-    public UserStorage userStorage;
+    private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Film createFilm(Film film) {
@@ -54,12 +55,12 @@ public class FilmService {
     }
 
     public Film addLikes(int filmId, long userId) {
-        if (userStorage.getUserById(userId).isEmpty()) {
+        if (!userStorage.getUserById(userId).isPresent()) {
             throw new ValidationException(HttpStatus.BAD_REQUEST, "User with id = " + userId +
                     "is not exist ");
         }
         Film film = getFilmById(filmId);
-        if (!film.getLikes().contains(userId)) {
+        if (!film.getLikes().contains((int) userId)) {
             film.getLikes().add((int) userId);
             log.info("A like added to the film with id = {} ", filmId);
             return film;
