@@ -1,5 +1,7 @@
 package ru.yandex.practicum.javafilmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
 import lombok.Data;
 import ru.yandex.practicum.javafilmorate.validation.FilmReleaseDate;
 
@@ -8,8 +10,11 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 
+@Builder
 @Data
 public class Film {
 
@@ -24,12 +29,6 @@ public class Film {
     @NotNull(message = "The film duration can't be empty")
     @Positive(message = "The film duration can't be positive")
     private Integer duration;
-
-    public Film(int id, String name, String description, LocalDate releaseDate, Integer duration) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-    }
+    @JsonIgnore
+    final Set<Integer> likes = new HashSet<>();
 }

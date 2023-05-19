@@ -1,0 +1,94 @@
+package ru.yandex.practicum.javafilmorate.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
+import ru.yandex.practicum.javafilmorate.exception.UserAlreadyExistException;
+import ru.yandex.practicum.javafilmorate.exception.ValidationException;
+import ru.yandex.practicum.javafilmorate.model.Film;
+import ru.yandex.practicum.javafilmorate.storage.FilmStorage;
+import ru.yandex.practicum.javafilmorate.storage.UserStorage;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+public class FilmService {
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
+
+    @Autowired
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+    }
+
+    public Film createFilm(Film film) {
+        log.info("Create a film with id = {} ", film.getId());
+        return filmStorage.createFilm(film);
+    }
+
+    public Film updateFilm(Film film) {
+        log.info("Update the film with id = {} ", film.getId());
+        return filmStorage.updateFilm(film);
+    }
+
+    public List<Film> getAllFilms() {
+        log.info("GET {} films", filmStorage.getAllFilms().size());
+        return filmStorage.getAllFilms();
+    }
+
+    public Film getFilmById(int filmId) {
+        Optional<Film> film = filmStorage.getFilmById(filmId);
+        if (film.isPresent()) {
+            log.info("Get the film with id = {} ", filmId);
+            return film.get();
+        } else {
+            throw new NotFoundException("The film with id =" + filmId + " not found");
+        }
+    }
+
+    public Film addLikes(int filmId, long userId) {
+        if (!userStorage.getUserById(userId).isPresent()) {
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "User with id = " + userId +
+                    "is not exist ");
+        }
+        Film film = getFilmById(filmId);
+        if (!film.getLikes().contains((int) userId)) {
+            film.getLikes().add((int) userId);
+            log.info("A like added to the film with id = {} ", filmId);
+            return film;
+        } else {
+            log.error("The user doesn't found");
+            throw new UserAlreadyExistException("The user doesn't found");
+        }
+    }
+
+    public Film removeLikes(int filmId, int userID) {
+        if (filmId < 0 || userID < 0) {
+            throw new NotFoundException("Negative value is not allowed");
+        }
+        Film film = getFilmById(filmId);
+        film.getLikes().remove(userID);
+        log.info("The user with id = {} remove a like from the film id = {}", userID, filmId);
+        return film;
+    }
+
+    public List<Film> favoritesFilms(Integer number) {
+        return filmStorage.getAllFilms().stream()
+                .sorted(Collections.reverseOrder(Comparator.comparingInt(film -> film.getLikes().size())))
+                .limit(number)
+                .collect(Collectors.toList());
+    }
+}
+
+
+
+
+
