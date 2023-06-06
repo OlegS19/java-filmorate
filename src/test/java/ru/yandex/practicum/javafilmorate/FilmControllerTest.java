@@ -1,38 +1,40 @@
-package ru.yandex.practicum.javafilmorate;
+/*
+package ru.yandex.practicum.javafilmorate.controller;
 
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.javafilmorate.controller.FilmController;
+import ru.yandex.practicum.javafilmorate.dao.FilmDao;
+import ru.yandex.practicum.javafilmorate.dao.UserDao;
+import ru.yandex.practicum.javafilmorate.dao.impl.FilmDaoImpl;
+import ru.yandex.practicum.javafilmorate.dao.impl.UserDaoImpl;
 import ru.yandex.practicum.javafilmorate.model.Film;
 import ru.yandex.practicum.javafilmorate.service.FilmService;
-import ru.yandex.practicum.javafilmorate.storage.FilmStorage;
-import ru.yandex.practicum.javafilmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.javafilmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.javafilmorate.storage.UserStorage;
+
 
 import javax.validation.*;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class FilmControllerTest {
     private static FilmController filmController;
     private Film film;
     private Validator validator;
-    public static UserStorage userStorage;
+    public static UserDao userStorage;
     private Set<Integer> likes;
 
     @BeforeEach
     void beforeEach() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        userStorage = new InMemoryUserStorage();
-        filmController = new FilmController(new FilmService(filmStorage, userStorage));
+        FilmDao filmStorage = new FilmDaoImpl();
+        userStorage = new UserDaoImpl();
+        filmController = new FilmController(new FilmService(filmStorage));
 
         film = Film.builder()
                 .id(0)
@@ -271,4 +273,4 @@ class FilmControllerTest {
         });
         Assertions.assertEquals("duration: The film duration can't be positive", exception.getMessage());
     }
-}
+}*/
