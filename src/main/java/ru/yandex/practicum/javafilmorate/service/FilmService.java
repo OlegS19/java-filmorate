@@ -3,12 +3,12 @@ package ru.yandex.practicum.javafilmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.javafilmorate.storage.*;
 import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.model.Film;
+import ru.yandex.practicum.javafilmorate.storage.*;
 
-
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -21,7 +21,6 @@ public class FilmService {
     private final LikeDao likeStorage;
 
     public Film createFilm(Film film) {
-        daoStorage.isMpaExisted(film.getMpa().getId());
         filmStorage.createFilm(film);
         genreStorage.createFilmGenre(film);
         log.info("Create a film with id = {} ", film.getId());
@@ -29,9 +28,7 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        filmStorage.isFilmExisted(film.getId());
         genreStorage.updateFilmGenre(film);
-        daoStorage.isMpaExisted(film.getMpa().getId());
         filmStorage.updateFilm(film);
         log.info("Update the film with id = {} ", film.getId());
         return film;
@@ -45,15 +42,16 @@ public class FilmService {
     }
 
     public Film getFilmById(int id) {
-        filmStorage.isFilmExisted(id);
-        Film film = filmStorage.getFilmById(id);
-        genreStorage.loadGenres(List.of(film));
-        return film;
+        Optional<Film> film = filmStorage.getFilmById(id);
+        if (film.isEmpty()) {
+            throw new NotFoundException("Film id: " + id + " does not exist...");
+        }
+        genreStorage.loadGenres(List.of(film.get()));
+        return film.get();
     }
 
+
     public void addLikes(int filmId, int userId) {
-        filmStorage.isFilmExisted(filmId);
-        userStorage.isUserExisted(userId);
         likeStorage.createLike(filmId, userId);
         log.info("Film id: {} like from user: {} ", filmId, userId);
     }

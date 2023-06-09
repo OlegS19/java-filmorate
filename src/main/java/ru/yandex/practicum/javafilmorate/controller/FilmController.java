@@ -9,7 +9,7 @@ import ru.yandex.practicum.javafilmorate.service.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.util.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/films")

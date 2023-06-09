@@ -16,7 +16,7 @@ class MpaDaoImplTest {
 
     @Test
     public void couldGetMpaById() {
-        assertEquals("PG-13", mpaStorage.getMpaById(3).getName());
+        assertEquals("PG-13", mpaStorage.getMpaById(3).get().getName());
     }
 
     @Test

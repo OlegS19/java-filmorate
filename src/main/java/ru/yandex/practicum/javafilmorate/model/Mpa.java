@@ -1,23 +1,18 @@
 package ru.yandex.practicum.javafilmorate.model;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NotNull
+@Valid
 public class Mpa {
-    @NotNull
     private Integer id;
     private String name;
 
-    @NotNull
-    @Valid
-    public Mpa(Integer id, String name) {
-        this.id = id;
-        this.name = name;
-    }
 }

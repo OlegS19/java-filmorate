@@ -46,14 +46,4 @@ public class ErrorHandlers {
         );
     }
 
-
-    @ExceptionHandler(Throwable.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleA(Throwable e) {
-        log.error("Server error {}: {},", e.getMessage(), e.getClass());
-        return Map.of(
-                "error", e.getMessage()
-        );
-    }
-
 }

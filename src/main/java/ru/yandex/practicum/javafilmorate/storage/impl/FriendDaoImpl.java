@@ -24,6 +24,7 @@ public class FriendDaoImpl implements FriendDao {
         String sqlQuery = "INSERT INTO friendship (user_id,friend_user_id) VALUES (?,?)";
         log.info("Add friend with id = {} to user with id = {}", friendId, id);
         jdbcTemplate.update(sqlQuery, id, friendId);
+
     }
 
     @Override
@@ -42,9 +43,9 @@ public class FriendDaoImpl implements FriendDao {
         List<User> commonFriends = new ArrayList<>();
         while (rs.next()) {
             commonFriends.add(new User(rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("login"),
                     rs.getString("email"),
+                    rs.getString("login"),
+                    rs.getString("name"),
                     Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()));
         }
         log.info("Get common te friend");
@@ -59,9 +60,9 @@ public class FriendDaoImpl implements FriendDao {
         List<User> friends = new ArrayList<>();
         while (rs.next()) {
             friends.add(new User(rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("login"),
                     rs.getString("email"),
+                    rs.getString("login"),
+                    rs.getString("name"),
                     Objects.requireNonNull(rs.getDate("birthday")).toLocalDate()));
         }
         log.info("Get All friends of user with id = {}", id);

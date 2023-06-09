@@ -1,17 +1,20 @@
 package ru.yandex.practicum.javafilmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.javafilmorate.validation.FilmReleaseDate;
 
 import javax.validation.Valid;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
 @Builder
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Data
 public class Film {
 
@@ -31,27 +34,6 @@ public class Film {
     @NotNull
     private Mpa mpa;
     private LinkedHashSet<Genre> genres;
-
-    public Film(String name, String description, LocalDate releaseDate, int duration,
-                Mpa mpa, LinkedHashSet<Genre> genres) {
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.mpa = mpa;
-        this.genres = genres;
-    }
-
-    public Film(Integer id, String name, String description, LocalDate releaseDate, Integer duration,
-                Mpa mpa, LinkedHashSet<Genre> genres) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.mpa = mpa;
-        this.genres = genres;
-    }
 
     public void addGenre(Genre genre) {
         if (genres == null) {

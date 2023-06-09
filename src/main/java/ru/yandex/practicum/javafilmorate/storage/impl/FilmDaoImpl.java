@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.model.Film;
@@ -17,6 +16,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Component
@@ -50,10 +50,13 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public Film getFilmById(int id) {
+    public Optional<Film> getFilmById(int id) {
         String sqlQuery = "SELECT f.*,  rm.name AS mpa_name FROM films AS f " +
                 "LEFT JOIN rating_mpa AS rm ON f.rating_id = rm.id WHERE f.id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
+        List<Film> film = jdbcTemplate.query(sqlQuery, this::makeFilm, id);
+        if (film.size() == 0)
+            return Optional.empty();
+        return Optional.of(film.get(0));
     }
 
     @Override
@@ -74,18 +77,11 @@ public class FilmDaoImpl implements FilmDao {
                 "duration = ?," +
                 "rating_id = ?" +
                 "WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
+        int count = jdbcTemplate.update(sqlQuery, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(),
                 film.getMpa().getId(), film.getId());
+        if (count == 0)
+            throw new NotFoundException("Film not found");
         return film;
-    }
-
-    @Override
-    public void isFilmExisted(int id) {
-        String sqlQuery = "SELECT id FROM films WHERE id = ?";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        if (!rowSet.next()) {
-            throw new NotFoundException("Film id: " + id + " does not exist...");
-        }
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {

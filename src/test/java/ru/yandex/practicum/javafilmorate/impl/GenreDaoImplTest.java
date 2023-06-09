@@ -15,7 +15,7 @@ class GenreDaoImplTest {
 
     @Test
     public void couldGetMpaById() {
-        assertEquals("Драма", genreStorage.getGenreById(2).getName());
+        assertEquals("Драма", genreStorage.getGenreById(2).get().getName());
     }
 
     @Test

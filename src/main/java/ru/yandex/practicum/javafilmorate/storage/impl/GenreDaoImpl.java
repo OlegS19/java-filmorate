@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.model.Film;
 import ru.yandex.practicum.javafilmorate.model.Genre;
 import ru.yandex.practicum.javafilmorate.storage.GenreDao;
@@ -14,10 +12,7 @@ import ru.yandex.practicum.javafilmorate.storage.GenreDao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -51,10 +46,12 @@ public class GenreDaoImpl implements GenreDao {
     }
 
     @Override
-    public Genre getGenreById(int id) {
-        this.isGenreExisted(id);
+    public Optional<Genre> getGenreById(int id) {
         String sqlQuery = "SELECT * FROM genres WHERE id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeGenre, id);
+        List<Genre> genre = jdbcTemplate.query(sqlQuery, this::makeGenre, id);
+        if (genre.size() == 0)
+            return Optional.empty();
+        return Optional.of(genre.get(0));
     }
 
     @Override
@@ -71,15 +68,6 @@ public class GenreDaoImpl implements GenreDao {
 
     }
 
-    @Override
-    public void isGenreExisted(int id) {
-        String sqlQuery = "SELECT name FROM genres WHERE id = ?";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        if (!rowSet.next()) {
-            throw new NotFoundException("Genre id: " + id + " does not exist...");
-        }
-    }
-
     private Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
         return new Genre(rs.getInt("id"), rs.getString("name"));
     }
@@ -91,15 +79,11 @@ public class GenreDaoImpl implements GenreDao {
         String inSql = String.join(",", Collections.nCopies(films.size(), "?"));
         final String sqlQuery = "SELECT * from genres g, film_genre fg where fg.genre_id = g.id AND fg.film_id in (" + inSql + ")";
         jdbcTemplate.query(sqlQuery, (rs) -> {
-            //Получили из ResultSet'a идентификатор фильма и извлекли по нему из мапы значение)
             if (!rs.wasNull()) {
                 final Film film = ids.get(rs.getInt("FILM_ID"));
 
-                //Добавили в коллекцию внутри объекта класса FIlm новый жанр)
-
                 film.addGenre(new Genre(rs.getInt("ID"), rs.getString("NAME")));
             }
-            //Преобразуем коллекцию типа Film к Integer и в массив, так как передавать требуется именно его
         }, films.stream().map(Film::getId).toArray());
     }
 }

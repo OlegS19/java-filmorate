@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
 import ru.yandex.practicum.javafilmorate.model.User;
@@ -16,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -26,12 +26,12 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User createUser(User user) {
-        String sqlQuery = "INSERT INTO users (name,login,email,birthday) VALUES (?,?,?,?)";        //Используйте KeyHolder для получения идентификатора записи вставки Spring JdbcTemplate
+        String sqlQuery = "INSERT INTO users (name,login,email,birthday) VALUES (?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sqlQuery, new String[]{"id"});
-            ps.setString(1, user.getLogin());
-            ps.setString(2, user.getName());
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getLogin());
             ps.setString(3, user.getEmail());
             ps.setDate(4, (java.sql.Date.valueOf(user.getBirthday())));
             return ps;
@@ -42,10 +42,14 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getUserById(int id) {
+    public Optional<User> getUserById(int id) {
         String sqlQuery = "SELECT * FROM users WHERE id = ?";
         log.info("Get user with id = {}", id);
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, id);
+        List<User> userList = jdbcTemplate.query(sqlQuery, this::makeUser, id);
+        if (userList.size() == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(userList.get(0));
     }
 
     @Override
@@ -56,7 +60,9 @@ public class UserDaoImpl implements UserDao {
                 "email = ?," +
                 "birthday = ?" +
                 "WHERE id = ?";
-        jdbcTemplate.update(sqlQuery, user.getLogin(), user.getName(), user.getEmail(), user.getBirthday(), user.getId());
+        int count = jdbcTemplate.update(sqlQuery, user.getName(), user.getLogin(), user.getEmail(), user.getBirthday(), user.getId());
+        if (count == 0)
+            throw new NotFoundException("User not found");
         log.info("Update user with id = {}", user.getId());
         return user;
     }
@@ -68,21 +74,12 @@ public class UserDaoImpl implements UserDao {
         return jdbcTemplate.query(sqlQuery, this::makeUser);
     }
 
-    @Override
-    public void isUserExisted(int id) {
-        String sqlQuery = "SELECT id FROM users WHERE id = ?";
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        if (!rowSet.next()) {
-            throw new NotFoundException("User with id= " + id + " doesn't exist...");
-        }
-    }
-
     private User makeUser(ResultSet rs, int rowNum) throws SQLException {
         log.info("Make users");
         return new User(rs.getInt("id"),
-                rs.getString("name"),
-                rs.getString("login"),
                 rs.getString("email"),
+                rs.getString("login"),
+                rs.getString("name"),
                 rs.getDate("birthday").toLocalDate());
     }
 }

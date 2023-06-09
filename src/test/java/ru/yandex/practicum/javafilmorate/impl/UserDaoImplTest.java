@@ -35,7 +35,7 @@ class UserDaoImplTest {
 
     @BeforeEach
     void beforeEach() {
-        userSecond = new User("dol", "Nickky Name", "qwertyu2@gmail.com",
+        userSecond = new User(1, "qwertyu2@gmail.com", "dol", "Nickky Name",
                 LocalDate.of(2006, 2, 2));
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
@@ -56,7 +56,7 @@ class UserDaoImplTest {
 
     @Test
     void shouldCreateUser() {
-        userOne = new User("dolore", "Nick Name", "qwertyui@gmail.com",
+        userOne = new User(1, "qwertyui@gmail.com", "dolore", "Nick Name",
                 LocalDate.of(1996, 12, 26));
         userStorage.createUser(userOne);
         assertEquals("dolore", userOne.getLogin(), "User's login isn't correct");
