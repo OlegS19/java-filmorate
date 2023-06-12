@@ -1,28 +1,24 @@
 package ru.yandex.practicum.javafilmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.javafilmorate.exception.NotFoundException;
-import ru.yandex.practicum.javafilmorate.exception.ValidationException;
 import ru.yandex.practicum.javafilmorate.model.User;
-import ru.yandex.practicum.javafilmorate.storage.UserStorage;
+import ru.yandex.practicum.javafilmorate.storage.FriendDao;
+import ru.yandex.practicum.javafilmorate.storage.UserDao;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final UserDao userStorage;
+    private final FriendDao friendStorage;
 
     public User createUser(User user) {
         validateUserName(user);
@@ -41,51 +37,40 @@ public class UserService {
         return userStorage.getAllUsers();
     }
 
-    public User getUserById(long id) {
-        log.info("Get the user with id = {}", id);
+    public User getUserById(int id) {
         Optional<User> user = userStorage.getUserById(id);
-        if (user.isPresent()) {
-            log.info("Get the user with id = {}", id);
-            return user.get();
-        } else {
-            throw new NotFoundException("User with id = " + id + " not found");
+        log.info("Get the user with id = {}", id);
+        if (user.isEmpty()) {
+            throw new NotFoundException("User not found");
         }
+        return user.get();
     }
 
-
-    public void addFriend(Long id, Long friendId) {
-        User user = getUserById(id);
-        if (user.getFriends().contains(friendId)) {
-            log.info("The friend with id = {} {} {}", friendId, " has been friend of the user with id = {}", id);
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "User " + id + " and the user " + friendId +
-                    "have been friends yet ");
+    public void addFriend(int id, int friendId) {
+        try {
+            friendStorage.addFriend(id, friendId);
+        } catch (Exception ex) {
+            throw new NotFoundException("User or friend not found");
         }
-        User friend = getUserById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
-
         log.info("The friend with id = {} {} {}", friendId, " has been added to the user with id = ", id);
         log.info("The friend with id = {} {} {}", id, " has been added to the user with id = ", friendId);
     }
 
-    public void removeFriendById(long id, long friendId) {
+    public void removeFriendById(int id, int friendId) {
         User user = getUserById(id);
         log.info("The friend with id = {}{}{}", friendId, " has been removed to the user with id = ", id);
-        user.getFriends().remove(friendId);
+        friendStorage.deleteFriend(id, friendId);
     }
 
-    public List<User> getAllFriends(long id) {
+    public List<User> getAllFriends(int id) {
+        List<User> friends = friendStorage.getAllFriends(id);
         log.info("Get All friends");
-        return getUserById(id).getFriends()
-                .stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return friends;
     }
 
-    public List<User> getCommonFriends(long userId, long friendId) {
+    public List<User> getCommonFriends(int userId, int friendId) {
         log.info("Get common friends");
-        List<User> friends = getAllFriends(userId);
-        friends.retainAll(getAllFriends(friendId));
+        List<User> friends = friendStorage.getCommonFriends(userId, friendId);
         return friends;
 
     }
@@ -96,4 +81,3 @@ public class UserService {
         }
     }
 }
-
